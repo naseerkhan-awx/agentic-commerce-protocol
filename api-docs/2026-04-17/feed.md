@@ -8,6 +8,18 @@ This document describes the **Feed** HTTP API: creating feed resources, reading 
 
 For bulk offline ingestion, merchants may ship `metadata.json` ([FeedMetadata](#feedmetadata)) and `products.jsonl` (one [Product](#product) JSON object per line). File-based ingestion replaces the full product set; **partial** catalog changes use `PATCH /feeds/{id}/products` only.
 
+**Examples:** Payloads use **only fields required by OpenAPI** (nested objects follow their own required arrays).
+
+**Error response** ([`Error`](#error), required fields only):
+
+```json
+{
+  "type": "invalid_request",
+  "code": "example_error_code",
+  "message": "Human-readable explanation."
+}
+```
+
 ---
 
 ## Overview
@@ -32,6 +44,20 @@ For bulk offline ingestion, merchants may ship `metadata.json` ([FeedMetadata](#
 | `201` | [FeedMetadata](#feedmetadata) | Feed created. |
 | `400` | [Error](#error) | Invalid payload (e.g. bad `target_country`). |
 
+**Example request** (`application/json`): [CreateFeedRequest](#createfeedrequest) has no required properties:
+
+```json
+{}
+```
+
+**Example response** (`201`, [FeedMetadata](#feedmetadata)):
+
+```json
+{
+  "id": "feed_01EXAMPLE"
+}
+```
+
 ---
 
 ## GET `/feeds/{id}` — Retrieve feed metadata
@@ -51,6 +77,14 @@ For bulk offline ingestion, merchants may ship `metadata.json` ([FeedMetadata](#
 | `200` | [FeedMetadata](#feedmetadata) | Success. |
 | `404` | [Error](#error) | Feed not found. |
 
+**Example response** (`200`, [FeedMetadata](#feedmetadata)):
+
+```json
+{
+  "id": "feed_01EXAMPLE"
+}
+```
+
 ---
 
 ## GET `/feeds/{id}/products` — Retrieve products for a feed
@@ -69,6 +103,19 @@ For bulk offline ingestion, merchants may ship `metadata.json` ([FeedMetadata](#
 |--------|------|---------|
 | `200` | [ProductsResponse](#productsresponse) | Full product set. |
 | `404` | [Error](#error) | Feed not found. |
+
+**Example response** (`200`, [ProductsResponse](#productsresponse)): [Product](#product) requires `id` and `variants`; each [Variant](#variant) requires `id` and `title`.
+
+```json
+{
+  "products": [
+    {
+      "id": "prod_01EXAMPLE",
+      "variants": [{ "id": "var_01EXAMPLE", "title": "Example variant" }]
+    }
+  ]
+}
+```
 
 ---
 
@@ -91,6 +138,28 @@ For bulk offline ingestion, merchants may ship `metadata.json` ([FeedMetadata](#
 | `200` | [UpsertProductsResponse](#upsertproductsresponse) | Upsert accepted (see OpenAPI schema for acknowledgement shape). |
 | `400` | [Error](#error) | Invalid product payload. |
 | `404` | [Error](#error) | Feed not found. |
+
+**Example request** (`application/json`, [UpsertProductsRequest](#upsertproductsrequest)):
+
+```json
+{
+  "products": [
+    {
+      "id": "prod_01EXAMPLE",
+      "variants": [{ "id": "var_01EXAMPLE", "title": "Example variant" }]
+    }
+  ]
+}
+```
+
+**Example response** (`200`, [UpsertProductsResponse](#upsertproductsresponse)):
+
+```json
+{
+  "id": "feed_01EXAMPLE",
+  "accepted": true
+}
+```
 
 ---
 
